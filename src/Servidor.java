@@ -14,7 +14,7 @@ public class Servidor extends JFrame {
     private static Map<String, ManejadorCliente> clientes = new ConcurrentHashMap<>();
     
     public Servidor() {
-        setTitle("Servidor Chat Privado");
+        setTitle("Servidor Chat Grupal - Adivina Quién");
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -56,28 +56,18 @@ public class Servidor extends JFrame {
         }
     }
 
-    // Enviar mensaje solo al destinatario
-    public void enviarMensajePrivado(String remitente, String destinatario, String texto) {
-        ManejadorCliente receptor = clientes.get(destinatario);
-        if (receptor != null) {
-            receptor.enviar("MSG|" + remitente + "|" + texto);
-            // Opcional: eco al remitente (para que vea su propio mensaje)
-            ManejadorCliente emisor = clientes.get(remitente);
-            if (emisor != null) {
-                emisor.enviar("MSG|" + remitente + "|" + texto);
-            }
-        } else {
-            // Opcional: notificar que el usuario no está conectado
-            ManejadorCliente emisor = clientes.get(remitente);
-            if (emisor != null) {
-                emisor.enviar("SYSTEM|El usuario " + destinatario + " no está conectado.");
-            }
+    // NUEVO: Enviar el mensaje a TODOS los clientes (Chat Grupal)
+    public void broadcastMensaje(String remitente, String texto) {
+        String mensajeFormateado = "MSG|" + remitente + "|" + texto;
+        
+        for (ManejadorCliente cliente : clientes.values()) {
+            cliente.enviar(mensajeFormateado);
         }
     }
 
     public static void main(String[] args) {
         Servidor server = new Servidor();
-        server.iniciar(6000);
+        server.iniciar(6000); // El puerto debe coincidir con el del cliente
     }
 
     // ────────────────────────────────────────────────
@@ -108,44 +98,47 @@ public class Servidor extends JFrame {
                 }
                 nombre = linea.substring(6).trim();
 
-                // Evitar nombres duplicados (simple)
+                // Evitar nombres duplicados (Si alguien entra de 2 PCs con el mismo usuario)
                 if (clientes.containsKey(nombre)) {
-                    out.println("SYSTEM|Nombre ya en uso. Conéctate con otro.");
+                    out.println("SYSTEM|El usuario ya está conectado en otra sesión.");
                     return;
                 }
 
+                // Registrar al nuevo cliente
                 clientes.put(nombre, this);
-                log("[+] " + nombre + " (" + socket.getInetAddress() + ") conectado");
+                log("[+] " + nombre + " (" + socket.getInetAddress() + ") se unió a la sala.");
 
-                // Avisar a todos (incluido él) la nueva lista
+                // Avisar a todos la nueva lista de conectados
                 broadcastListaUsuarios();
-                out.println("SYSTEM|Bienvenido " + nombre + "!");
                 
-                // Enviar lista inicial de usuarios a este cliente
-                String lista = String.join(",", clientes.keySet());
-                out.println("USERS|" + lista);
-
+                // Darle la bienvenida al usuario
+                out.println("SYSTEM|¡Bienvenido al chat global, " + nombre + "!");
+                
                 // Procesar mensajes entrantes
                 while ((linea = in.readLine()) != null) {
                     if (linea.startsWith("MSG|")) {
                         String[] partes = linea.split("\\|", 3);
                         if (partes.length == 3) {
-                            String destinatario = partes[1];
+                            // En el cliente lo enviamos como MSG|TODOS|Texto
                             String texto = partes[2];
-                            log(nombre + " → " + destinatario + ": " + texto);
-                            enviarMensajePrivado(nombre, destinatario, texto);
+                            
+                            // Imprimimos en la consola del servidor para llevar registro
+                            log(nombre + " a TODOS: " + texto);
+                            
+                            // Disparamos el mensaje a todos los conectados
+                            broadcastMensaje(nombre, texto);
                         }
                     }
                 }
 
             } catch (IOException e) {
-                // desconexión
+                // Si ocurre un error, asumimos que se desconectó
             } finally {
+                // Limpieza al desconectarse
                 if (nombre != null) {
                     clientes.remove(nombre);
-                    log("[-] " + nombre + " desconectado");
-                    broadcastListaUsuarios();
-                    out.println("SYSTEM|Desconexión confirmada.");
+                    log("[-] " + nombre + " salió de la sala.");
+                    broadcastListaUsuarios(); // Actualizamos la lista de todos
                 }
                 try { socket.close(); } catch (Exception ignored) {}
             }

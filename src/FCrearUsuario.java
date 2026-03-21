@@ -9,6 +9,7 @@ public class FCrearUsuario extends javax.swing.JFrame {
     public FCrearUsuario() {
         initComponents();
         this.setLocationRelativeTo(null);
+        this.getRootPane().setDefaultButton(BCrear);
     }
 
     @SuppressWarnings("unchecked")
@@ -18,7 +19,7 @@ public class FCrearUsuario extends javax.swing.JFrame {
         TFUsuario = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        BAcceder = new javax.swing.JButton();
+        BCrear = new javax.swing.JButton();
         JFPassword = new javax.swing.JPasswordField();
         BSesion = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
@@ -35,8 +36,8 @@ public class FCrearUsuario extends javax.swing.JFrame {
         jLabel3.setFont(new java.awt.Font("Comic Sans MS", 0, 18)); // NOI18N
         jLabel3.setText("Contraseña");
 
-        BAcceder.setText("Crear");
-        BAcceder.addActionListener(this::BAccederActionPerformed);
+        BCrear.setText("Crear");
+        BCrear.addActionListener(this::BCrearActionPerformed);
 
         BSesion.setFont(new java.awt.Font("Calibri Light", 0, 12)); // NOI18N
         BSesion.setText("<html><u>Iniciar Sesion</u></html>");
@@ -62,7 +63,7 @@ public class FCrearUsuario extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(39, 39, 39)
-                .addComponent(BAcceder, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(BCrear, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
                 .addComponent(BSesion, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(33, 33, 33))
@@ -97,14 +98,14 @@ public class FCrearUsuario extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(BSesion)
-                    .addComponent(BAcceder, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(BCrear, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(36, 36, 36))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void BAccederActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BAccederActionPerformed
+    private void BCrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BCrearActionPerformed
         Conexion cnx = new Conexion();
         String usuario = TFUsuario.getText().trim();
         String passwordPlana = new String(JFPassword.getPassword());
@@ -125,7 +126,7 @@ public class FCrearUsuario extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "El nombre de usuario ya existe");
         }
 
-    }//GEN-LAST:event_BAccederActionPerformed
+    }//GEN-LAST:event_BCrearActionPerformed
 
     private void BSesionMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_BSesionMouseEntered
         BSesion.setText("<html><div style='text-align: center; color: blue;'><u>Iniciar Sesion</u></div></html>");
@@ -167,7 +168,7 @@ public class FCrearUsuario extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton BAcceder;
+    private javax.swing.JButton BCrear;
     private javax.swing.JButton BSesion;
     private javax.swing.JPasswordField JFPassword;
     private javax.swing.JTextField TFUsuario;

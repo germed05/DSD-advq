@@ -9,6 +9,7 @@ public class FSesion extends javax.swing.JFrame {
     public FSesion() {
         initComponents();
         this.setLocationRelativeTo(null);
+        this.getRootPane().setDefaultButton(BAcceder);
     }
 
     @SuppressWarnings("unchecked")
