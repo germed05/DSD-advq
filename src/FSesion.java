@@ -133,6 +133,9 @@ public class FSesion extends javax.swing.JFrame {
             //chechpw hace que bycript compare la contraseña de la bd con la escrita
             if (BCrypt.checkpw(passwordEscrita, hashDB)) { 
                 JOptionPane.showMessageDialog(this, "¡Bienvenido, " + usuario + "!");
+                Clientes ventanaClientes = new Clientes(usuario);
+                ventanaClientes.setVisible(true);
+                this.dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Contraseña incorrecta");
             }
