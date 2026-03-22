@@ -57,7 +57,7 @@ public class Clientes extends javax.swing.JFrame {
 
     private void procesarMensajeDelServidor(String linea) {
         SwingUtilities.invokeLater(() -> {
-            // 1. CHAT: Actualización de conectados
+            //Actualización de conectados
             if (linea.startsWith("USERS|")) {
                 String[] usuarios = linea.substring(6).split(",");
                 TAUsuarios.setText("CONECTADOS:\n-----------\n");
@@ -68,7 +68,7 @@ public class Clientes extends javax.swing.JFrame {
                     }
                 }
             } 
-            // 2. CHAT: Mensajes recibidos
+            //Mensajes recibidos
             else if (linea.startsWith("MSG|")) {
                 String[] partes = linea.split("\\|", 3);
                 if (partes.length == 3) {
@@ -81,7 +81,7 @@ public class Clientes extends javax.swing.JFrame {
                     }
                 }
             } 
-            // 3. CHAT: Alertas del sistema
+            //Alertas del sistema
             else if (linea.startsWith("SYSTEM|")) {
                 appendMensaje(">> " + linea.substring(7) + "\n");
             } 

@@ -63,7 +63,10 @@ public class Servidor extends JFrame {
             cliente.enviar(mensajeFormateado);
         }
     }
-
+    
+    //cambios realizados al servidor..
+    //funcion verificarLobby
+    //funcion run
     public synchronized void verificarLobby() {
         int total = clientes.size();
         int listos = 0;
@@ -136,7 +139,7 @@ public class Servidor extends JFrame {
                 broadcastListaUsuarios();
                 out.println("SYSTEM|¡Bienvenido al servidor, " + nombre + "!");
 
-                // --- CAMBIO AQUÍ: Control de espectadores/espera ---
+                //Control de jugadores en espera
                 if (juegoEnCurso) {
                     // Si el juego ya empezó, lo mandamos a la sala de espera
                     out.println("GAME_IN_PROGRESS");
@@ -164,7 +167,7 @@ public class Servidor extends JFrame {
                     clientes.remove(nombre);
                     log("[-] " + nombre + " salió de la sala.");
 
-                    // --- CAMBIO AQUÍ: Liberar la sala si se quedan solos ---
+                    //Liberar la sala si se quedan solos ---
                     if (clientes.size() < 2) {
                         juegoEnCurso = false; // Se cancela la partida activa
                     }

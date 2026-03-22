@@ -115,10 +115,10 @@ public class FCrearUsuario extends javax.swing.JFrame {
             return;
         }
 
-        String passwordEncriptada = BCrypt.hashpw(passwordPlana, BCrypt.gensalt());
+        String passwordEncriptada = BCrypt.hashpw(passwordPlana, BCrypt.gensalt());//uso de la libreria bycrypt para encriptar contraseña
         String[] datos = {usuario, passwordEncriptada, "0"};
 
-        int insertado = cnx.insertar("advq", datos);
+        int insertado = cnx.insertar("advq", datos);//funciones del crud agregadas en Conexion
 
         if (insertado == 1) {
             JOptionPane.showMessageDialog(this, "¡Usuario '" + usuario + "' creado con éxito!");

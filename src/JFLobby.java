@@ -1,3 +1,5 @@
+//Implementar que al terminar el juego regrese a los jugadores al lobby para que si hay un usuario esperando
+//pueda pasar al ingame
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,13 +24,11 @@ public class JFLobby extends javax.swing.JFrame {
     public JFLobby(String nombreUsuario) {
         this.usuarioActivo = nombreUsuario;
         initComponents();
+        //
         setTitle("Lobby - Adivina Quién (" + usuarioActivo + ")");
         setSize(400, 300);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        lblContador.setFont(new java.awt.Font("Segoe UI", 1, 60));
-        lblContador.setForeground(new java.awt.Color(200, 50, 50));
-        lblContador.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblContador.setText(" ");
         conectarAlServidor();
 
@@ -40,7 +40,6 @@ public class JFLobby extends javax.swing.JFrame {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            // Avisamos quién entró
             out.println("LOGIN|" + usuarioActivo);
 
             // Hilo que escucha solo los mensajes del Lobby
@@ -61,10 +60,10 @@ public class JFLobby extends javax.swing.JFrame {
             System.exit(0);
         }
     }
-
+    //traducir los mensajes qeue se obtienen del buffer reader y procesarlo
     private void procesarMensaje(String linea) {
         SwingUtilities.invokeLater(() -> {
-
+            //error de usuario duplicado salta un joptpane y regresa a sesion
             if (linea.equals("ERROR|DUPLICATE_USER")) {
                 javax.swing.JOptionPane.showMessageDialog(this,
                         "Esta cuenta ya tiene una sesión iniciada actualmente.",
@@ -72,17 +71,16 @@ public class JFLobby extends javax.swing.JFrame {
                         javax.swing.JOptionPane.WARNING_MESSAGE);
                 escuchandoLobby = false;
                 this.dispose();
-                // Asumiendo que tu ventana de inicio se llama FSesion:
-                // new FSesion().setVisible(true); 
+                new FSesion().setVisible(true); 
                 return;
-            } // --- NUEVO: Atrapamos el mensaje de que la partida ya arrancó ---
+            } // Obtener el mensaje de que la partida ya arrancó y poner en espera 
             else if (linea.equals("GAME_IN_PROGRESS")) {
                 lblEstado.setText("Partida en curso...");
                 btnListo.setEnabled(false);
                 btnListo.setText("En espera");
-            } // ---------------------------------------------------------------
+            } // procesar cuando entra un nuevo jugador y cuantos presionaron listo
             else if (linea.startsWith("LOBBY_UPDATE|")) {
-                String[] partes = linea.split("\\|");
+                String[] partes = linea.split("\\|"); //Split separa el texto, se usan \\ para scapear la barra "or|"
                 int listos = Integer.parseInt(partes[1]);
                 int total = Integer.parseInt(partes[2]);
 
@@ -102,7 +100,7 @@ public class JFLobby extends javax.swing.JFrame {
             }
         });
     }
-
+    
     private void iniciarCuentaRegresivaYPasarAlChat() {
         btnListo.setVisible(false);
         lblEstado.setText("¡PREPÁRATE!");
@@ -119,11 +117,10 @@ public class JFLobby extends javax.swing.JFrame {
                 } else {
                     ((Timer) e.getSource()).stop();
 
-                    // --- LA MAGIA: Pasamos los objetos vivos a la ventana de Clientes ---
+                    //Pasamos los objetos a la ventana de Clientes ---
                     Clientes chatFrame = new Clientes(usuarioActivo, socket, out, in);
                     chatFrame.setVisible(true);
 
-                    // Cerramos el Lobby
                     dispose();
                 }
                 conteo--;
