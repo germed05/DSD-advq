@@ -1,6 +1,4 @@
-
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import javax.swing.SwingUtilities;
@@ -10,76 +8,72 @@ public class Clientes extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Clientes.class.getName());
 
     String usuarioActivo;
+    // Variables de red
+    private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
 
-    public Clientes(String nombreUsuario) {
-        // Guardamos el dato que llego desde el inicio de sesion
-        this.usuarioActivo = nombreUsuario;
-        initComponents();
-        this.setLocationRelativeTo(null); // Centra la ventana
-        // Mostramos quién inició sesión en el título de la ventana
-        this.setTitle("Usuario: " + usuarioActivo);
+
+    public Clientes(String nombreUsuario, Socket s, PrintWriter pw, BufferedReader br) {
+        this.usuarioActivo = nombreUsuario; 
+        this.socket = s;
+        this.out = pw;
+        this.in = br;
+        
+        initComponents(); // Dibuja la ventana
+        this.setLocationRelativeTo(null); 
+        this.setTitle("Adivina Quién (Chat Global) - Usuario: " + usuarioActivo);
+        
         TAMensajes.setEditable(false);
         TAUsuarios.setEditable(false);
+        
         txtMensaje.addActionListener(evt -> btnEnviarActionPerformed(evt));
-        conectarAlServidor();
+        
+        // ¡Arrancamos a escuchar el chat inmediatamente con la conexión que nos pasaron!
+        iniciarEscuchaDelChat();
     }
 
-    // Método para conectar con tu Servidor de Sockets
-    private void conectarAlServidor() {
-        try {
-            // Conecta al puerto 6000 (asegúrate de que tu servidor esté corriendo)
-            Socket socket = new Socket("localhost", 6000);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // Al conectar, le decimos al servidor quiénes somos
-            out.println("LOGIN|" + usuarioActivo);
-
-            // Hilo para escuchar todo lo que manda el servidor sin congelar la ventana
-            new Thread(() -> {
-                try {
-                    String linea;
-                    while ((linea = in.readLine()) != null) {
-                        procesarMensajeDelServidor(linea);
-                    }
-                } catch (Exception e) {
-                    appendMensaje(">> Conexión con el servidor cerrada.\n");
+    // --- ESTE MÉTODO REEMPLAZA AL VIEJO conectarAlServidor() ---
+    private void iniciarEscuchaDelChat() {
+        new Thread(() -> {
+            try {
+                String linea;
+                // Leemos los mensajes de la misma tubería que dejó abierta el Lobby
+                while ((linea = in.readLine()) != null) {
+                    procesarMensajeDelServidor(linea);
                 }
-            }).start();
-
-        } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "No se pudo conectar al servidor de chat. ¿Está encendido?",
-                    "Error de Conexión",
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                appendMensaje(">> Conexión con el servidor cerrada.\n");
+            }
+        }).start();
+        
+        // Avisamos a todos que ya cargó nuestra ventana de chat
+        if (out != null) {
+            out.println("MSG|TODOS|¡He entrado a la partida!");
         }
     }
 
-    // Método que procesa lo que llega del Servidor
+ 
+
     private void procesarMensajeDelServidor(String linea) {
         SwingUtilities.invokeLater(() -> {
-            
+            // 1. CHAT: Actualización de conectados
             if (linea.startsWith("USERS|")) {
-                // ... (Este se queda igual que como lo tenías) ...
                 String[] usuarios = linea.substring(6).split(",");
-                TAUsuarios.setText("USUARIOS EN LÍNEA:\n------------------\n");
+                TAUsuarios.setText("CONECTADOS:\n-----------\n");
                 for (String u : usuarios) {
                     String trimmed = u.trim();
                     if (!trimmed.isEmpty()) {
-                        TAUsuarios.append("• " + trimmed + "\n"); 
+                        TAUsuarios.append("• " + trimmed + "\n");
                     }
                 }
             } 
-            // --- NUEVO: Modificamos cómo se dibujan los mensajes ---
+            // 2. CHAT: Mensajes recibidos
             else if (linea.startsWith("MSG|")) {
                 String[] partes = linea.split("\\|", 3);
                 if (partes.length == 3) {
                     String remitente = partes[1];
                     String texto = partes[2];
-                    
-                    // Comparamos el remitente con tu usuario activo
                     if (remitente.equals(usuarioActivo)) {
                         appendMensaje("[Tú]: " + texto + "\n");
                     } else {
@@ -87,6 +81,7 @@ public class Clientes extends javax.swing.JFrame {
                     }
                 }
             } 
+            // 3. CHAT: Alertas del sistema
             else if (linea.startsWith("SYSTEM|")) {
                 appendMensaje(">> " + linea.substring(7) + "\n");
             } 
@@ -95,6 +90,7 @@ public class Clientes extends javax.swing.JFrame {
             }
         });
     }
+
 
     // Utilidad para agregar texto al chat y bajar el scroll automáticamente
     private void appendMensaje(String texto) {
@@ -190,6 +186,7 @@ public class Clientes extends javax.swing.JFrame {
         }
         // Limpiamos la caja de texto para seguir escribiendo
         txtMensaje.setText("");
+        txtMensaje.requestFocus();
     }//GEN-LAST:event_btnEnviarActionPerformed
 
     /**
