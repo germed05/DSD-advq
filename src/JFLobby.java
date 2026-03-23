@@ -36,7 +36,7 @@ public class JFLobby extends javax.swing.JFrame {
 
     private void conectarAlServidor() {
         try {
-            socket = new Socket("10.221.64.85", 6000);//cambiar de localhost a direccion ipconfig/hacer una ventana de entrada de ip
+            socket = new Socket("localhost", 6000);//cambiar de localhost a direccion ipconfig/hacer una ventana de entrada de ip
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -119,7 +119,7 @@ public class JFLobby extends javax.swing.JFrame {
                 } else {
                     ((Timer) e.getSource()).stop();
 
-                    // --- LA MAGIA: Pasamos los objetos vivos a la ventana de Clientes ---
+                    //Pasamos los objetos vivos a la ventana de Clientes
                     Clientes chatFrame = new Clientes(usuarioActivo, socket, out, in);
                     chatFrame.setVisible(true);
 
