@@ -119,7 +119,7 @@ public class JFLobby extends javax.swing.JFrame {
                 } else {
                     ((Timer) e.getSource()).stop();
 
-                    // --- LA MAGIA: Pasamos los objetos vivos a la ventana de Clientes ---
+                    //Pasamos los objetos vivos a la ventana de Clientes
                     Clientes chatFrame = new Clientes(usuarioActivo, socket, out, in);
                     chatFrame.setVisible(true);
 
