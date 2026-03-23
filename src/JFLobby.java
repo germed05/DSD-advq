@@ -36,7 +36,7 @@ public class JFLobby extends javax.swing.JFrame {
 
     private void conectarAlServidor() {
         try {
-            socket = new Socket("localhost", 6000);//cambiar de localhost a direccion ipconfig/hacer una ventana de entrada de ip
+            socket = new Socket("10.221.64.85", 6000);//cambiar de localhost a direccion ipconfig/hacer una ventana de entrada de ip
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
