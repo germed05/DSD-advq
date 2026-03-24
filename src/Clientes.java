@@ -44,11 +44,12 @@ public class Clientes extends javax.swing.JFrame {
                 appendMensaje(">> Conexión con el servidor cerrada.\n");
             }
         }).start();
-        
-        // Avisamos a todos que ya cargó nuestra ventana de chat
         if (out != null) {
+            out.println("UPDATE_USERS"); // <--- NUEVO: Pedimos la lista al servidor
             out.println("MSG|TODOS|¡He entrado a la partida!");
         }
+        
+        
     }
 
  

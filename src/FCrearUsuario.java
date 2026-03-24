@@ -1,5 +1,4 @@
 import org.mindrot.jbcrypt.BCrypt; //libreria de bycript
-import java.sql.*;
 import javax.swing.JOptionPane;
 
 public class FCrearUsuario extends javax.swing.JFrame {

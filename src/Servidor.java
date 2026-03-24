@@ -158,6 +158,8 @@ public class Servidor extends JFrame {
                     } else if (linea.equals("READY")) {
                         this.isReady = true;
                         verificarLobby();
+                    }else if (linea.equals("UPDATE_USERS")) {
+                        broadcastListaUsuarios();
                     }
                 }
 
