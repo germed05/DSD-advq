@@ -118,6 +118,7 @@ public class JFLobby extends javax.swing.JFrame {
                     ((Timer) e.getSource()).stop();
 
                     //Pasamos los objetos a la ventana de Clientes ---
+                    //Pasamos los objetos vivos a la ventana de Clientes
                     Clientes chatFrame = new Clientes(usuarioActivo, socket, out, in);
                     chatFrame.setVisible(true);
 
