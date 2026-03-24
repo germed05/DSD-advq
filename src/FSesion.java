@@ -136,7 +136,6 @@ public class FSesion extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "¡Bienvenido, " + usuario + "!");
 //                Clientes ventanaClientes = new Clientes(usuario);
 //                ventanaClientes.setVisible(true);
-   
                 JFLobby lobby = new JFLobby(usuario);
                 lobby.setVisible(true);
                 this.dispose();
@@ -148,7 +147,6 @@ public class FSesion extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_BAccederActionPerformed
 
-    //estilos par de pendejas
     private void BCrearMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_BCrearMouseEntered
         BCrear.setText("<html><div style='text-align: center; color: blue;'><u>Crear Usuario</u></div></html>");
     }//GEN-LAST:event_BCrearMouseEntered

@@ -1,5 +1,6 @@
 //Implementar que al terminar el juego regrese a los jugadores al lobby para que si hay un usuario esperando
 //pueda pasar al ingame
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,6 +14,7 @@ import javax.swing.Timer;
 public class JFLobby extends javax.swing.JFrame {
 
     private String usuarioActivo;
+    private boolean personajeSecreto = false;
 
     // Objetos de la conexión que le pasaremos al Chat después
     private Socket socket;
@@ -60,6 +62,7 @@ public class JFLobby extends javax.swing.JFrame {
             System.exit(0);
         }
     }
+
     //traducir los mensajes qeue se obtienen del buffer reader y procesarlo
     private void procesarMensaje(String linea) {
         SwingUtilities.invokeLater(() -> {
@@ -71,7 +74,7 @@ public class JFLobby extends javax.swing.JFrame {
                         javax.swing.JOptionPane.WARNING_MESSAGE);
                 escuchandoLobby = false;
                 this.dispose();
-                new FSesion().setVisible(true); 
+                new FSesion().setVisible(true);
                 return;
             } // Obtener el mensaje de que la partida ya arrancó y poner en espera 
             else if (linea.equals("GAME_IN_PROGRESS")) {
@@ -94,13 +97,22 @@ public class JFLobby extends javax.swing.JFrame {
                         btnListo.setEnabled(true);
                     }
                 }
+            } else if (linea.startsWith("ROLE|")) {
+                String[] partes = linea.split("\\|");
+
+                if (partes[1].equals("SECRET")) {
+                    personajeSecreto = true;
+                } else {
+                    personajeSecreto = false;
+                }
+
             } else if (linea.equals("START_GAME")) {
                 escuchandoLobby = false;
                 iniciarCuentaRegresivaYPasarAlChat();
             }
         });
     }
-    
+
     private void iniciarCuentaRegresivaYPasarAlChat() {
         btnListo.setVisible(false);
         lblEstado.setText("¡PREPÁRATE!");
@@ -117,10 +129,14 @@ public class JFLobby extends javax.swing.JFrame {
                 } else {
                     ((Timer) e.getSource()).stop();
 
-                    //Pasamos los objetos a la ventana de Clientes ---
-                    //Pasamos los objetos vivos a la ventana de Clientes
-                    Clientes chatFrame = new Clientes(usuarioActivo, socket, out, in);
-                    chatFrame.setVisible(true);
+                    //se valida el rol del jugador
+                    if (personajeSecreto) {
+                        ClientesSecreto chatFrame = new ClientesSecreto(usuarioActivo, socket, out, in);
+                        chatFrame.setVisible(true);
+                    } else {
+                        Clientes chatFrame = new Clientes(usuarioActivo, socket, out, in);
+                        chatFrame.setVisible(true);
+                    }
 
                     dispose();
                 }

@@ -1,12 +1,13 @@
+
 import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Servidor extends JFrame {
-    
+
     private JTextArea areaLogs;
     private static volatile boolean running = true;
     private static ServerSocket serverSocket;
@@ -63,7 +64,7 @@ public class Servidor extends JFrame {
             cliente.enviar(mensajeFormateado);
         }
     }
-    
+
     //cambios realizados al servidor..
     //funcion verificarLobby
     //funcion run
@@ -85,7 +86,24 @@ public class Servidor extends JFrame {
         if (total >= 2 && listos == total && !juegoEnCurso) {
             juegoEnCurso = true;
             log("¡Todos listos! Iniciando el juego...");
-            for (ManejadorCliente c : clientes.values()) {
+
+            //Crear una lista de clientes
+            List<ManejadorCliente> listaClientes = new ArrayList<>(clientes.values());
+            Random random = new Random();
+
+            int indiceSecreto = random.nextInt(listaClientes.size());//Generar un indice aleatorio en base al tamaño de la lista
+            ManejadorCliente jugadorSecreto = listaClientes.get(indiceSecreto);//DEfinir el jugador con el perdonaje secreto
+
+            log("Jugador secreto: " + jugadorSecreto.nombre);
+
+            for (ManejadorCliente c : listaClientes) {
+
+                if (c == jugadorSecreto) {
+                    c.enviar("ROLE|SECRET");//Rol de jugador secreto para abrir la ventana que corresponde
+                } else {
+                    c.enviar("ROLE|NORMAL");
+                }
+
                 c.enviar("START_GAME");
             }
         }
@@ -158,7 +176,7 @@ public class Servidor extends JFrame {
                     } else if (linea.equals("READY")) {
                         this.isReady = true;
                         verificarLobby();
-                    }else if (linea.equals("UPDATE_USERS")) {
+                    } else if (linea.equals("UPDATE_USERS")) {
                         broadcastListaUsuarios();
                     }
                 }

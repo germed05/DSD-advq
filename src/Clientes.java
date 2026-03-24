@@ -1,6 +1,9 @@
+
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 public class Clientes extends javax.swing.JFrame {
@@ -13,22 +16,21 @@ public class Clientes extends javax.swing.JFrame {
     private PrintWriter out;
     private BufferedReader in;
 
-
     public Clientes(String nombreUsuario, Socket s, PrintWriter pw, BufferedReader br) {
-        this.usuarioActivo = nombreUsuario; 
+        this.usuarioActivo = nombreUsuario;
         this.socket = s;
         this.out = pw;
         this.in = br;
-        
+
         initComponents(); // Dibuja la ventana
-        this.setLocationRelativeTo(null); 
+        this.setLocationRelativeTo(null);
         this.setTitle("Adivina Quién (Chat Global) - Usuario: " + usuarioActivo);
-        
+
         TAMensajes.setEditable(false);
         TAUsuarios.setEditable(false);
-        
+
         txtMensaje.addActionListener(evt -> btnEnviarActionPerformed(evt));
-        
+
         iniciarEscuchaDelChat();
     }
 
@@ -48,11 +50,8 @@ public class Clientes extends javax.swing.JFrame {
             out.println("UPDATE_USERS"); // <--- NUEVO: Pedimos la lista al servidor
             out.println("MSG|TODOS|¡He entrado a la partida!");
         }
-        
-        
-    }
 
- 
+    }
 
     private void procesarMensajeDelServidor(String linea) {
         SwingUtilities.invokeLater(() -> {
@@ -71,25 +70,27 @@ public class Clientes extends javax.swing.JFrame {
             else if (linea.startsWith("MSG|")) {
                 String[] partes = linea.split("\\|", 3);
                 if (partes.length == 3) {
-                    String remitente = partes[1];
-                    String texto = partes[2];
-                    if (remitente.equals(usuarioActivo)) {
-                        appendMensaje("[Tú]: " + texto + "\n");
-                    } else {
-                        appendMensaje("[" + remitente + "]: " + texto + "\n");
+                    try {
+                        String remitente = partes[1];
+                        String texto = partes[2];
+                        String decifrado = AES.descifrar(texto);
+                        if (remitente.equals(usuarioActivo)) {
+                            appendMensaje("[Tú]: " + decifrado + "\n");
+                        } else {
+                            appendMensaje("[" + remitente + "]: " + decifrado + "\n");
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
                 }
-            } 
-            //Alertas del sistema
+            } //Alertas del sistema
             else if (linea.startsWith("SYSTEM|")) {
                 appendMensaje(">> " + linea.substring(7) + "\n");
-            } 
-            else {
+            } else {
                 appendMensaje(linea + "\n");
             }
         });
     }
-
 
     // Utilidad para agregar texto al chat y bajar el scroll automáticamente
     private void appendMensaje(String texto) {
@@ -278,19 +279,24 @@ public class Clientes extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
-        String texto = txtMensaje.getText().trim();
+        try {
+            String texto = txtMensaje.getText().trim();
 
-        // Si el campo está vacío, no hacemos nada
-        if (texto.isEmpty()) {
-            return;
+            if (texto.isEmpty()) {
+                return;
+            }
+            // En lugar de enviar un destinatario, le decimos al servidor que es para "TODOS"
+            String cifrado = AES.cifrar(texto);
+
+            if (out != null) {
+                out.println("MSG|TODOS|" + cifrado);
+            }
+            // Limpiamos la caja de texto para seguir escribiendo
+            txtMensaje.setText("");
+            txtMensaje.requestFocus();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        // En lugar de enviar un destinatario, le decimos al servidor que es para "TODOS"
-        if (out != null) {
-            out.println("MSG|TODOS|" + texto);
-        }
-        // Limpiamos la caja de texto para seguir escribiendo
-        txtMensaje.setText("");
-        txtMensaje.requestFocus();
     }//GEN-LAST:event_btnEnviarActionPerformed
 
     /**
