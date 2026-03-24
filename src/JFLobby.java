@@ -1,6 +1,3 @@
-//Implementar que al terminar el juego regrese a los jugadores al lobby para que si hay un usuario esperando
-//pueda pasar al ingame
-
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -22,6 +20,7 @@ public class JFLobby extends javax.swing.JFrame {
     private BufferedReader in;
     private boolean escuchandoLobby = true;
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(JFLobby.class.getName());
+    private String personajeAsignado = null;
 
     public JFLobby(String nombreUsuario) {
         this.usuarioActivo = nombreUsuario;
@@ -48,9 +47,50 @@ public class JFLobby extends javax.swing.JFrame {
             new Thread(() -> {
                 try {
                     String linea;
-                    // El ciclo se rompe cuando escuchandoLobby sea false
-                    while (escuchandoLobby && (linea = in.readLine()) != null) {
-                        procesarMensaje(linea);
+                    while ((linea = in.readLine()) != null) {
+                        String mensaje = linea;
+                        if (linea.equals("ERROR|DUPLICATE_USER")) {
+                            SwingUtilities.invokeLater(() -> {
+                                JOptionPane.showMessageDialog(this,
+                                        "Esta cuenta ya tiene una sesión iniciada actualmente.",
+                                        "Acceso Denegado",
+                                        JOptionPane.WARNING_MESSAGE);
+                                this.dispose();
+                                new FSesion().setVisible(true);
+                            });
+                            break;
+                        }
+
+                        if (linea.equals("GAME_IN_PROGRESS")) {
+                            SwingUtilities.invokeLater(() -> {
+                                lblEstado.setText("Partida en curso...");
+                                btnListo.setEnabled(false);
+                                btnListo.setText("En espera");
+                            });
+                            continue;
+                        }
+
+                        if (linea.startsWith("LOBBY_UPDATE|")) {
+                            SwingUtilities.invokeLater(() -> procesarLobbyUpdate(mensaje));
+                            continue;
+                        }
+
+                        if (linea.startsWith("ROLE|")) {
+                            String[] partes = linea.split("\\|");
+                            personajeSecreto = partes[1].equals("SECRET");
+                            continue;
+                        }
+
+                        if (linea.startsWith("SECRET_CHARACTER|")) {
+                            personajeAsignado = linea.substring(17);
+                            continue;
+                        }
+
+                        if (linea.equals("START_GAME")) {
+                            escuchandoLobby = false; // esto debe pasar ANTES de abrir la otra ventana
+                            SwingUtilities.invokeLater(this::iniciarCuentaRegresivaYPasarAlChat);
+                            break; // importante: no sigas leyendo más líneas en este hilo
+                        }
                     }
                 } catch (Exception e) {
                     System.out.println("Lobby desconectado.");
@@ -60,6 +100,23 @@ public class JFLobby extends javax.swing.JFrame {
         } catch (Exception e) {
             javax.swing.JOptionPane.showMessageDialog(this, "Error: El servidor no está encendido.");
             System.exit(0);
+        }
+    }
+
+    private void procesarLobbyUpdate(String linea) {
+        String[] partes = linea.split("\\|");
+        int listos = Integer.parseInt(partes[1]);
+        int total = Integer.parseInt(partes[2]);
+
+        if (total < 2) {
+            lblEstado.setText("Esperando a más jugadores... (" + total + " en sala)");
+            btnListo.setEnabled(false);
+        } else {
+            lblEstado.setText("Jugadores listos: " + listos + " / " + total);
+            if (!btnListo.getText().equals("Esperando a los demás...")
+                    && !btnListo.getText().equals("En espera")) {
+                btnListo.setEnabled(true);
+            }
         }
     }
 
@@ -105,7 +162,8 @@ public class JFLobby extends javax.swing.JFrame {
                 } else {
                     personajeSecreto = false;
                 }
-
+            } else if (linea.startsWith("SECRET_CHARACTER|")) {
+                personajeAsignado = linea.substring(17);
             } else if (linea.equals("START_GAME")) {
                 escuchandoLobby = false;
                 iniciarCuentaRegresivaYPasarAlChat();
@@ -131,7 +189,7 @@ public class JFLobby extends javax.swing.JFrame {
 
                     //se valida el rol del jugador
                     if (personajeSecreto) {
-                        ClientesSecreto chatFrame = new ClientesSecreto(usuarioActivo, socket, out, in);
+                        ClientesSecreto chatFrame = new ClientesSecreto(usuarioActivo, socket, out, in, personajeAsignado);
                         chatFrame.setVisible(true);
                     } else {
                         Clientes chatFrame = new Clientes(usuarioActivo, socket, out, in);

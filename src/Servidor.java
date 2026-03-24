@@ -11,9 +11,17 @@ public class Servidor extends JFrame {
     private JTextArea areaLogs;
     private static volatile boolean running = true;
     private static ServerSocket serverSocket;
+    private static String personajeActual = null;
+    private static List<ManejadorCliente> ordenTurnos = new ArrayList<>();
+    private static int turnoActual = 0;
+    private static ManejadorCliente jugadorTurnoActual = null;
 
     private static Map<String, ManejadorCliente> clientes = new ConcurrentHashMap<>();
     private static boolean juegoEnCurso = false;
+    private static final String[] personajes = {
+        "Manuel", "Jorge", "María", "Pablo", "Paco", "Pedro",
+        "Pepe", "Ricardo", "Tomás", "Roberto", "Samuel", "Susana"
+    };
 
     public Servidor() {
         setTitle("Servidor Chat Grupal - Adivina Quién");
@@ -96,15 +104,32 @@ public class Servidor extends JFrame {
 
             log("Jugador secreto: " + jugadorSecreto.nombre);
 
+            personajeActual = personajes[random.nextInt(personajes.length)];
+            log("Personaje secreto elegido: " + personajeActual);
+
+            ordenTurnos = new ArrayList<>(listaClientes);
+            ordenTurnos.remove(jugadorSecreto); // el secreto no adivina
+            Collections.shuffle(ordenTurnos, random);
+            turnoActual = 0;
+
             for (ManejadorCliente c : listaClientes) {
 
+                c.isReady = false; // reiniciar ready
+
                 if (c == jugadorSecreto) {
-                    c.enviar("ROLE|SECRET");//Rol de jugador secreto para abrir la ventana que corresponde
+                    c.enviar("ROLE|SECRET");
+                    c.enviar("SECRET_CHARACTER|" + personajeActual);
+
                 } else {
                     c.enviar("ROLE|NORMAL");
                 }
 
                 c.enviar("START_GAME");
+            }
+
+            if (!ordenTurnos.isEmpty()) {
+                jugadorTurnoActual = ordenTurnos.get(turnoActual);
+                anunciarTurno();
             }
         }
     }
@@ -114,7 +139,31 @@ public class Servidor extends JFrame {
         server.iniciar(6000);
     }
 
-    // ────────────────────────────────────────────────
+    private synchronized void anunciarTurno() {
+        if (jugadorTurnoActual == null) {
+            return;
+        }
+
+        String mensajeTurno = "TURN|" + jugadorTurnoActual.nombre;
+
+        for (ManejadorCliente c : clientes.values()) {
+            c.enviar(mensajeTurno);
+        }
+
+        log("Turno de: " + jugadorTurnoActual.nombre);
+    }
+
+    private synchronized void avanzarTurno() {
+        if (ordenTurnos.isEmpty()) {
+            return;
+        }
+
+        turnoActual = (turnoActual + 1) % ordenTurnos.size();
+        jugadorTurnoActual = ordenTurnos.get(turnoActual);
+        anunciarTurno();
+    }
+
+// ────────────────────────────────────────────────
     class ManejadorCliente implements Runnable {
 
         private Socket socket;
@@ -178,6 +227,36 @@ public class Servidor extends JFrame {
                         verificarLobby();
                     } else if (linea.equals("UPDATE_USERS")) {
                         broadcastListaUsuarios();
+                    } else if (linea.startsWith("GUESS|")) {
+                        String intento = linea.substring(6);
+
+                        if (jugadorTurnoActual == null || !nombre.equals(jugadorTurnoActual.nombre)) {
+                            this.enviar("SYSTEM|No es tu turno.");
+                            continue;
+                        }
+
+                        log(nombre + " intentó adivinar: " + intento);
+
+                        if (intento.equals(personajeActual)) {
+
+                            for (ManejadorCliente c : clientes.values()) {
+                                c.enviar("GAME_WIN|" + nombre);
+                                c.isReady = false;
+                            }
+
+                            juegoEnCurso = false;
+                            personajeActual = null;
+                            ordenTurnos.clear();
+                            jugadorTurnoActual = null;
+                            turnoActual = 0;
+
+                            log("La partida terminó. Reiniciando lobby...");
+                            verificarLobby();
+
+                        } else {
+                            this.enviar("SYSTEM|Personaje incorrecto.");
+                            avanzarTurno();
+                        }
                     }
                 }
 
@@ -185,6 +264,10 @@ public class Servidor extends JFrame {
             } finally {
                 if (nombre != null) {
                     clientes.remove(nombre);
+                    ordenTurnos.removeIf(c -> nombre.equals(c.nombre));
+                    if (jugadorTurnoActual != null && nombre.equals(jugadorTurnoActual.nombre)) {
+                        avanzarTurno();
+                    }
                     log("[-] " + nombre + " salió de la sala.");
 
                     //Liberar la sala si se quedan solos ---

@@ -4,11 +4,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class Clientes extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Clientes.class.getName());
+    private boolean esMiTurno = false;
+    private String nombreTurno = null;
 
     String usuarioActivo;
     // Variables de red
@@ -28,6 +31,7 @@ public class Clientes extends javax.swing.JFrame {
 
         TAMensajes.setEditable(false);
         TAUsuarios.setEditable(false);
+
 
         txtMensaje.addActionListener(evt -> btnEnviarActionPerformed(evt));
 
@@ -65,8 +69,7 @@ public class Clientes extends javax.swing.JFrame {
                         TAUsuarios.append("• " + trimmed + "\n");
                     }
                 }
-            } 
-            //Mensajes recibidos
+            } //Mensajes recibidos
             else if (linea.startsWith("MSG|")) {
                 String[] partes = linea.split("\\|", 3);
                 if (partes.length == 3) {
@@ -86,6 +89,27 @@ public class Clientes extends javax.swing.JFrame {
             } //Alertas del sistema
             else if (linea.startsWith("SYSTEM|")) {
                 appendMensaje(">> " + linea.substring(7) + "\n");
+            } else if (linea.startsWith("GAME_WIN|")) {
+                String ganador = linea.substring(9);
+                JOptionPane.showMessageDialog(this, "¡" + ganador + " adivinó el personaje!");
+
+                try {
+                    socket.close();   // cerrar conexión con el servidor
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                this.dispose();
+                new JFLobby(usuarioActivo).setVisible(true);
+
+            } else if (linea.startsWith("TURN|")) {
+                nombreTurno = linea.substring(5);
+                esMiTurno = nombreTurno.trim().equals(usuarioActivo.trim());
+
+                appendMensaje(">> Turno de: " + nombreTurno + "\n");
+                appendMensaje(">> Mi usuario: " + usuarioActivo + "\n");
+
+                habilitarTablero(esMiTurno);
             } else {
                 appendMensaje(linea + "\n");
             }
@@ -108,18 +132,18 @@ public class Clientes extends javax.swing.JFrame {
         TAUsuarios = new javax.swing.JTextArea();
         btnEnviar = new javax.swing.JButton();
         txtMensaje = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
+        lblManuel = new javax.swing.JLabel();
+        lblJorge = new javax.swing.JLabel();
+        lblMaria = new javax.swing.JLabel();
+        lblPablo = new javax.swing.JLabel();
+        lblPaco = new javax.swing.JLabel();
+        lblPedro = new javax.swing.JLabel();
+        lblPepe = new javax.swing.JLabel();
+        lblRicardo = new javax.swing.JLabel();
+        lblTomas = new javax.swing.JLabel();
+        lblRoberto = new javax.swing.JLabel();
+        lblSamuel = new javax.swing.JLabel();
+        lblSusana = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -138,65 +162,125 @@ public class Clientes extends javax.swing.JFrame {
         btnEnviar.setText("Enviar");
         btnEnviar.addActionListener(this::btnEnviarActionPerformed);
 
-        jLabel8.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/manuel.jpg"))); // NOI18N
-        jLabel8.setText("jLabel1");
-        jLabel8.setOpaque(true);
+        lblManuel.setBackground(new java.awt.Color(51, 255, 102));
+        lblManuel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/manuel.jpg"))); // NOI18N
+        lblManuel.setText("jLabel1");
+        lblManuel.setOpaque(true);
+        lblManuel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblManuelMouseClicked(evt);
+            }
+        });
 
-        jLabel9.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/jorge.jpg"))); // NOI18N
-        jLabel9.setText("jLabel1");
-        jLabel9.setOpaque(true);
+        lblJorge.setBackground(new java.awt.Color(51, 255, 102));
+        lblJorge.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/jorge.jpg"))); // NOI18N
+        lblJorge.setText("jLabel1");
+        lblJorge.setOpaque(true);
+        lblJorge.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblJorgeMouseClicked(evt);
+            }
+        });
 
-        jLabel10.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/maria.jpg"))); // NOI18N
-        jLabel10.setText("jLabel1");
-        jLabel10.setOpaque(true);
+        lblMaria.setBackground(new java.awt.Color(51, 255, 102));
+        lblMaria.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/maria.jpg"))); // NOI18N
+        lblMaria.setText("jLabel1");
+        lblMaria.setOpaque(true);
+        lblMaria.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblMariaMouseClicked(evt);
+            }
+        });
 
-        jLabel11.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/pablo.jpg"))); // NOI18N
-        jLabel11.setText("jLabel1");
-        jLabel11.setOpaque(true);
+        lblPablo.setBackground(new java.awt.Color(51, 255, 102));
+        lblPablo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/pablo.jpg"))); // NOI18N
+        lblPablo.setText("jLabel1");
+        lblPablo.setOpaque(true);
+        lblPablo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblPabloMouseClicked(evt);
+            }
+        });
 
-        jLabel12.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/paco.jpg"))); // NOI18N
-        jLabel12.setText("jLabel1");
-        jLabel12.setOpaque(true);
+        lblPaco.setBackground(new java.awt.Color(51, 255, 102));
+        lblPaco.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/paco.jpg"))); // NOI18N
+        lblPaco.setText("jLabel1");
+        lblPaco.setOpaque(true);
+        lblPaco.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblPacoMouseClicked(evt);
+            }
+        });
 
-        jLabel13.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/pedro.jpg"))); // NOI18N
-        jLabel13.setText("jLabel1");
-        jLabel13.setOpaque(true);
+        lblPedro.setBackground(new java.awt.Color(51, 255, 102));
+        lblPedro.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/pedro.jpg"))); // NOI18N
+        lblPedro.setText("jLabel1");
+        lblPedro.setOpaque(true);
+        lblPedro.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblPedroMouseClicked(evt);
+            }
+        });
 
-        jLabel14.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/pepe.jpg"))); // NOI18N
-        jLabel14.setText("jLabel1");
-        jLabel14.setOpaque(true);
+        lblPepe.setBackground(new java.awt.Color(51, 255, 102));
+        lblPepe.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/pepe.jpg"))); // NOI18N
+        lblPepe.setText("jLabel1");
+        lblPepe.setOpaque(true);
+        lblPepe.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblPepeMouseClicked(evt);
+            }
+        });
 
-        jLabel15.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/ricardo.jpg"))); // NOI18N
-        jLabel15.setText("jLabel1");
-        jLabel15.setOpaque(true);
+        lblRicardo.setBackground(new java.awt.Color(51, 255, 102));
+        lblRicardo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/ricardo.jpg"))); // NOI18N
+        lblRicardo.setText("jLabel1");
+        lblRicardo.setOpaque(true);
+        lblRicardo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblRicardoMouseClicked(evt);
+            }
+        });
 
-        jLabel16.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel16.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/tomas.jpg"))); // NOI18N
-        jLabel16.setText("jLabel1");
-        jLabel16.setOpaque(true);
+        lblTomas.setBackground(new java.awt.Color(51, 255, 102));
+        lblTomas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/tomas.jpg"))); // NOI18N
+        lblTomas.setText("jLabel1");
+        lblTomas.setOpaque(true);
+        lblTomas.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblTomasMouseClicked(evt);
+            }
+        });
 
-        jLabel17.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel17.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/roberto.jpg"))); // NOI18N
-        jLabel17.setText("jLabel1");
-        jLabel17.setOpaque(true);
+        lblRoberto.setBackground(new java.awt.Color(51, 255, 102));
+        lblRoberto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/roberto.jpg"))); // NOI18N
+        lblRoberto.setText("jLabel1");
+        lblRoberto.setOpaque(true);
+        lblRoberto.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblRobertoMouseClicked(evt);
+            }
+        });
 
-        jLabel18.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel18.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/samuel.jpg"))); // NOI18N
-        jLabel18.setText("jLabel1");
-        jLabel18.setOpaque(true);
+        lblSamuel.setBackground(new java.awt.Color(51, 255, 102));
+        lblSamuel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/samuel.jpg"))); // NOI18N
+        lblSamuel.setText("jLabel1");
+        lblSamuel.setOpaque(true);
+        lblSamuel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblSamuelMouseClicked(evt);
+            }
+        });
 
-        jLabel19.setBackground(new java.awt.Color(51, 255, 102));
-        jLabel19.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/susana.jpg"))); // NOI18N
-        jLabel19.setText("jLabel1");
-        jLabel19.setOpaque(true);
+        lblSusana.setBackground(new java.awt.Color(51, 255, 102));
+        lblSusana.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/susana.jpg"))); // NOI18N
+        lblSusana.setText("jLabel1");
+        lblSusana.setOpaque(true);
+        lblSusana.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblSusanaMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -216,29 +300,29 @@ public class Clientes extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblJorge, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblManuel, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblMaria, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(lblPablo, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblPaco, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblPedro, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblPepe, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(lblRicardo, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblRoberto, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblSamuel, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblSusana, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(lblTomas, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -250,22 +334,22 @@ public class Clientes extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addGroup(layout.createSequentialGroup()
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(lblJorge, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblManuel, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblMaria, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblPablo, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(lblPaco, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblPedro, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblPepe, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblRicardo, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(lblRoberto, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblSamuel, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblSusana, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblTomas, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 555, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 555, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
@@ -299,6 +383,54 @@ public class Clientes extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnEnviarActionPerformed
 
+    private void lblJorgeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblJorgeMouseClicked
+        verificarPersonaje("Jorge");
+    }//GEN-LAST:event_lblJorgeMouseClicked
+
+    private void lblManuelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblManuelMouseClicked
+        verificarPersonaje("Manuel");
+    }//GEN-LAST:event_lblManuelMouseClicked
+
+    private void lblMariaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblMariaMouseClicked
+        verificarPersonaje("María");
+    }//GEN-LAST:event_lblMariaMouseClicked
+
+    private void lblPabloMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPabloMouseClicked
+        verificarPersonaje("Pablo");
+    }//GEN-LAST:event_lblPabloMouseClicked
+
+    private void lblPacoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPacoMouseClicked
+        verificarPersonaje("Paco");
+    }//GEN-LAST:event_lblPacoMouseClicked
+
+    private void lblPedroMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPedroMouseClicked
+        verificarPersonaje("Pedro");
+    }//GEN-LAST:event_lblPedroMouseClicked
+
+    private void lblPepeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblPepeMouseClicked
+        verificarPersonaje("Pepe");
+    }//GEN-LAST:event_lblPepeMouseClicked
+
+    private void lblRicardoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblRicardoMouseClicked
+        verificarPersonaje("Ricardo");
+    }//GEN-LAST:event_lblRicardoMouseClicked
+
+    private void lblRobertoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblRobertoMouseClicked
+        verificarPersonaje("Roberto");
+    }//GEN-LAST:event_lblRobertoMouseClicked
+
+    private void lblSamuelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSamuelMouseClicked
+        verificarPersonaje("Samuel");
+    }//GEN-LAST:event_lblSamuelMouseClicked
+
+    private void lblSusanaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSusanaMouseClicked
+        verificarPersonaje("Susana");
+    }//GEN-LAST:event_lblSusanaMouseClicked
+
+    private void lblTomasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblTomasMouseClicked
+        verificarPersonaje("Tomás");
+    }//GEN-LAST:event_lblTomasMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -327,20 +459,49 @@ public class Clientes extends javax.swing.JFrame {
     private javax.swing.JTextArea TAMensajes;
     private javax.swing.JTextArea TAUsuarios;
     private javax.swing.JButton btnEnviar;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblJorge;
+    private javax.swing.JLabel lblManuel;
+    private javax.swing.JLabel lblMaria;
+    private javax.swing.JLabel lblPablo;
+    private javax.swing.JLabel lblPaco;
+    private javax.swing.JLabel lblPedro;
+    private javax.swing.JLabel lblPepe;
+    private javax.swing.JLabel lblRicardo;
+    private javax.swing.JLabel lblRoberto;
+    private javax.swing.JLabel lblSamuel;
+    private javax.swing.JLabel lblSusana;
+    private javax.swing.JLabel lblTomas;
     private javax.swing.JTextField txtMensaje;
     // End of variables declaration//GEN-END:variables
+
+    private void verificarPersonaje(String personajeSeleccionado) {
+        if (!esMiTurno) {
+            JOptionPane.showMessageDialog(this, "Espera tu turno.");
+            return;
+        }
+
+        esMiTurno = false;
+        habilitarTablero(false);
+
+        if (out != null) {
+            out.println("GUESS|" + personajeSeleccionado);
+        }
+    }
+
+    private void habilitarTablero(boolean habilitar) {
+        lblManuel.setEnabled(habilitar);
+        lblJorge.setEnabled(habilitar);
+        lblMaria.setEnabled(habilitar);
+        lblPablo.setEnabled(habilitar);
+        lblPaco.setEnabled(habilitar);
+        lblPedro.setEnabled(habilitar);
+        lblPepe.setEnabled(habilitar);
+        lblRicardo.setEnabled(habilitar);
+        lblTomas.setEnabled(habilitar);
+        lblRoberto.setEnabled(habilitar);
+        lblSamuel.setEnabled(habilitar);
+        lblSusana.setEnabled(habilitar);
+    }
 }

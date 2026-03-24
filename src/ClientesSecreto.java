@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Random;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class ClientesSecreto extends javax.swing.JFrame {
@@ -17,11 +18,12 @@ public class ClientesSecreto extends javax.swing.JFrame {
     private PrintWriter out;
     private BufferedReader in;
 
-    public ClientesSecreto(String nombreUsuario, Socket s, PrintWriter pw, BufferedReader br) {
+    public ClientesSecreto(String nombreUsuario, Socket s, PrintWriter pw, BufferedReader br, String personaje) {
         this.usuarioActivo = nombreUsuario;
         this.socket = s;
         this.out = pw;
         this.in = br;
+        this.nombrePersonaje = personaje;
 
         initComponents(); // Dibuja la ventana
         this.setLocationRelativeTo(null);
@@ -94,6 +96,22 @@ public class ClientesSecreto extends javax.swing.JFrame {
             } // 3. CHAT: Alertas del sistema
             else if (linea.startsWith("SYSTEM|")) {
                 appendMensaje(">> " + linea.substring(7) + "\n");
+            } else if (linea.startsWith("GAME_WIN|")) {
+
+                String ganador = linea.substring(9);
+                JOptionPane.showMessageDialog(this, "¡" + ganador + " adivinó el personaje!");
+
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                this.dispose();
+                new JFLobby(usuarioActivo).setVisible(true);
+            } else if (linea.startsWith("TURN|")) {
+                String nombreTurno = linea.substring(5);
+                appendMensaje(">> Turno de: " + nombreTurno + "\n");
             } else {
                 appendMensaje(linea + "\n");
             }
@@ -257,8 +275,6 @@ public class ClientesSecreto extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void cargarPersonaje() {
-        Random random = new Random();
-        nombrePersonaje = personajes[random.nextInt(personajes.length)];
         LPersonaje.setText(nombrePersonaje);
 
         switch (nombrePersonaje) {
@@ -310,9 +326,9 @@ public class ClientesSecreto extends javax.swing.JFrame {
             case "Susana":
                 lblPersonaje.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/susana.jpg")));
                 break;
-
-            default:
-                throw new AssertionError("Personaje no válido: " + nombrePersonaje);
+        }
+        if (out != null) {
+            out.println("SECRET|" + nombrePersonaje);
         }
     }
 }
