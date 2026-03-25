@@ -466,4 +466,37 @@ public class Conexion {
         }
         return correcta;
     }
+    //-------------------------------------------------------
+    //--- Obtener cantidad de victorias
+    //-------------------------------------------------------
+    public String obtenerVictorias(String usuario) {
+        String consulta = "SELECT win FROM advq WHERE usr = '" + usuario + "'";
+        return obtenerDato(consulta);
+    }
+
+    //-------------------------------------------------------
+    //--- Sumar 1 victoria al jugador
+    //-------------------------------------------------------
+    public void sumarVictoria(String usuario) {
+        // 1. Preguntamos cuántas victorias tiene actualmente
+        String victoriasStr = obtenerVictorias(usuario);
+        int victoriasActuales = 0;
+        
+        try {
+            if (victoriasStr != null && !victoriasStr.trim().isEmpty()) {
+                victoriasActuales = Integer.parseInt(victoriasStr.trim());
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Error al leer victorias: " + e.getMessage());
+        }
+
+        // 2. Java hace la matemática de forma segura
+        victoriasActuales++;
+
+        // 3. Enviamos un UPDATE tradicional que el servidor web sí acepta
+        String consulta = "UPDATE advq SET win = '" + victoriasActuales + "' WHERE usr = '" + usuario + "'";
+        
+        peticionHttpPost(url, consulta);
+        System.out.println("Se actualizó la victoria de " + usuario + " a " + victoriasActuales);
+    }
 }
