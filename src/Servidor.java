@@ -238,7 +238,10 @@ public class Servidor extends JFrame {
                         log(nombre + " intentó adivinar: " + intento);
 
                         if (intento.equals(personajeActual)) {
-
+                            
+                            Conexion cnx = new Conexion();
+                            cnx.sumarVictoria(nombre);
+                            
                             for (ManejadorCliente c : clientes.values()) {
                                 c.enviar("GAME_WIN|" + nombre);
                                 c.isReady = false;

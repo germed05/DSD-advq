@@ -466,4 +466,40 @@ public class Conexion {
         }
         return correcta;
     }
+    //-------------------------------------------------------
+    //--- Obtener cantidad de victorias
+    //-------------------------------------------------------
+    public String obtenerVictorias(String usuario) {
+        String consulta = "SELECT win FROM advq WHERE usr = '" + usuario + "'";
+        return obtenerDato(consulta);
+    }
+
+    //-------------------------------------------------------
+    //--- Sumar 1 victoria al jugador
+    //-------------------------------------------------------
+        //-------------------------------------------------------
+    //--- Sumar 1 victoria al jugador (Versión Segura)
+    //-------------------------------------------------------
+    public void sumarVictoria(String usuario) {
+        //Obtenemos las victorias actuales del servidor
+        String victoriasStr = obtenerVictorias(usuario);
+        int victoriasActuales = 0;
+        try {
+            if (victoriasStr != null && !victoriasStr.trim().isEmpty()) {
+                victoriasActuales = Integer.parseInt(victoriasStr.trim());
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Error al parsear victorias: " + e.getMessage());
+        }
+        //Hacemos la suma localmente en Java
+        victoriasActuales++;
+
+        //Enviamos el valor absoluto, idéntico a como actualizas otras tablas
+        String consulta = "UPDATE advq SET win = '" + victoriasActuales + "' WHERE usr = '" + usuario + "'";
+        
+        System.out.println("--- ACTUALIZACIÓN ---");
+        System.out.println("Enviando: " + consulta);
+        String respuesta = peticionHttpPost(url, consulta);
+        System.out.println("Respuesta MySQL/PHP: " + respuesta);
+    }
 }
